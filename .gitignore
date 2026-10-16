@@ -1,0 +1,11 @@
+node_modules/
+client/dist/
+data.json
+uploads/*
+!uploads/.gitkeep
+.env
+.env.*
+!.env.example
+files.zip
+npm-debug.log*
+yarn-debug.log*
