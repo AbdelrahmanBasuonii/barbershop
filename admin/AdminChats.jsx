@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import { API_BASE_URL, api } from '../api.js';
 import AdminPageTitle from './AdminPageTitle.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 export default function AdminChats() {
+  const { t, isEnglish } = useLocale();
   const [chats, setChats] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [text, setText] = useState('');
@@ -19,7 +21,7 @@ export default function AdminChats() {
 
   useEffect(() => {
     refresh().catch(problem => setError(problem.message));
-    const socket = io(API_BASE_URL || undefined, { auth: { token: localStorage.getItem('at') } });
+    const socket = io(API_BASE_URL || undefined, { auth: { token: localStorage.getItem('at'), language: isEnglish ? 'en' : 'ar' } });
     socketRef.current = socket;
     socket.on('msg', message => setChats(current => {
       const existing = current.find(chat => chat.user.id === message.userId);
@@ -27,9 +29,10 @@ export default function AdminChats() {
       refresh().catch(problem => setError(problem.message));
       return current;
     }));
-    socket.on('connect_error', () => setError('تعذر الاتصال بالرسائل المباشرة.'));
+    socket.on('connect_error', () => setError(t('تعذر الاتصال بالرسائل المباشرة.')));
+    socket.on('chat:error', chatError => setError(t(chatError.error)));
     return () => socket.disconnect();
-  }, []);
+  }, [isEnglish, t]);
 
   const activeChat = chats.find(chat => chat.user.id === selectedId);
   useEffect(() => {
@@ -39,7 +42,7 @@ export default function AdminChats() {
   function send(event) {
     event.preventDefault();
     if (!selectedId || !text.trim()) return;
-    if (!socketRef.current?.connected) return setError('الاتصال غير متاح حالياً.');
+    if (!socketRef.current?.connected) return setError(t('الاتصال غير متاح حالياً.'));
     socketRef.current.emit('reply', { userId: selectedId, text: text.trim() });
     setText('');
     setError('');
@@ -51,14 +54,14 @@ export default function AdminChats() {
       {error && <p className="admin-error">{error}</p>}
       <div className="admin-chat-layout">
         <div className="admin-chat-list">{chats.map(chat => <button type="button" key={chat.user.id} className={chat.user.id === selectedId ? 'active' : ''} onClick={() => setSelectedId(chat.user.id)}>
-          <strong>{chat.user.fullName}</strong><span>{chat.msgs.at(-1)?.text || 'محادثة جديدة'}</span>
-        </button>)}{!chats.length && <p className="admin-empty">لا توجد محادثات حتى الآن.</p>}</div>
+          <strong>{chat.user.fullName}</strong><span>{chat.msgs.at(-1)?.text ? t(chat.msgs.at(-1).text) : t('محادثة جديدة')}</span>
+        </button>)}{!chats.length && <p className="admin-empty">{t('لا توجد محادثات حتى الآن.')}</p>}</div>
         <section className="admin-chat-conversation">
           <div className="admin-chat-messages" ref={messagesRef}>
-            {activeChat?.msgs.map((message, index) => <div key={`${message.at}-${index}`} className={`chat-message ${message.from}`}><span>{message.text}</span></div>)}
-            {!activeChat && <p className="admin-empty">اختار محادثة للبدء.</p>}
+            {activeChat?.msgs.map((message, index) => <div key={`${message.at}-${index}`} className={`chat-message ${message.from}`}><span>{t(message.text)}</span></div>)}
+            {!activeChat && <p className="admin-empty">{t('اختار محادثة للبدء.')}</p>}
           </div>
-          <form className="chat-form" onSubmit={send}><input value={text} onChange={event => setText(event.target.value)} placeholder="اكتب ردك..." maxLength={500} disabled={!activeChat} /><button className="button" disabled={!activeChat || !text.trim()}>إرسال</button></form>
+          <form className="chat-form" onSubmit={send}><input value={text} onChange={event => setText(event.target.value)} placeholder={t('اكتب ردك...')} maxLength={500} disabled={!activeChat} /><button className="button" disabled={!activeChat || !text.trim()}>{t('إرسال')}</button></form>
         </section>
       </div>
     </>

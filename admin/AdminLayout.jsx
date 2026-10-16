@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 const links = [
   ['/admin', 'نظرة عامة', true],
@@ -14,17 +15,19 @@ const links = [
 
 export default function AdminLayout() {
   const { user, logout } = useAuth();
+  const { t, isEnglish, toggleLanguage } = useLocale();
   return (
     <div className="admin-shell">
       <aside className="admin-sidebar">
-        <NavLink className="admin-brand" to="/admin">لوحة التحكم<span>إدارة المحل</span></NavLink>
-        <nav aria-label="قائمة الإدارة">
-          {links.map(([to, label, end]) => <NavLink key={to} to={to} end={end}>{label}</NavLink>)}
+        <NavLink className="admin-brand" to="/admin">{t('لوحة التحكم')}<span>{t('إدارة المحل')}</span></NavLink>
+        <nav aria-label={t('قائمة الإدارة')}>
+          {links.map(([to, label, end]) => <NavLink key={to} to={to} end={end}>{t(label)}</NavLink>)}
         </nav>
         <div className="admin-sidebar-bottom">
           <span>{user?.fullName}</span>
-          <NavLink to="/">عرض الموقع</NavLink>
-          <button className="admin-logout" onClick={logout}>تسجيل الخروج</button>
+          <button className="button button-outline language-toggle" onClick={toggleLanguage}>{isEnglish ? 'العربية' : 'English'}</button>
+          <NavLink to="/">{t('عرض الموقع')}</NavLink>
+          <button className="admin-logout" onClick={logout}>{t('تسجيل الخروج')}</button>
         </div>
       </aside>
       <main className="admin-content"><Outlet /></main>

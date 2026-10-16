@@ -15,6 +15,12 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; font: 16px/1.7 "Almarai", sans-serif; }
+html[lang="en"] body { font-family: Inter, Arial, sans-serif; }
+html[lang="en"] .admin-brand, html[lang="en"] .hero-copy h1, html[lang="en"] .page-title h1,
+html[lang="en"] .section-heading h2, html[lang="en"] .service-card strong,
+html[lang="en"] .admin-page-title h1, html[lang="en"] .admin-stat-card strong,
+html[lang="en"] .admin-revenue-summary strong, html[lang="en"] .admin-panel h2,
+html[lang="en"] .admin-section-heading h2 { font-family: Inter, Arial, sans-serif; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
@@ -31,6 +37,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .site-nav nav a, .nav-account > a:not(.button) { color: #e9edf4; text-decoration: none; font-size: 14px; opacity: .82; transition: opacity .2s, color .2s; }
 .site-nav nav a:hover, .site-nav nav a.active, .nav-account > a:not(.button):hover { color: #fff; opacity: 1; }
 .nav-account { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+.language-toggle { flex: 0 0 auto; min-height: 36px; padding: 5px 10px; font-size: 12px; }
 .welcome { white-space: nowrap; color: #e9edf4; }
 .button { min-height: 42px; display: inline-flex; justify-content: center; align-items: center; gap: 10px; border: 1px solid var(--red); border-radius: 5px; padding: 9px 18px; background: var(--red); color: #fff; text-decoration: none; cursor: pointer; font-weight: 700; transition: background .18s, transform .18s; }
 .button:hover:not(:disabled) { background: #9d1d27; transform: translateY(-1px); }

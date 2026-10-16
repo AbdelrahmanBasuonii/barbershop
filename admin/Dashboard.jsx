@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import AdminPageTitle from './AdminPageTitle.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 const cards = [
   ['customers', 'العملاء', '/admin/customers', 'عرض تفاصيل العملاء'],
@@ -12,6 +13,7 @@ const cards = [
 ];
 
 export default function Dashboard() {
+  const { t, isEnglish } = useLocale();
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -22,8 +24,8 @@ export default function Dashboard() {
       <AdminPageTitle title="نظرة عامة" description="ملخص سريع لحركة المحل." />
       {error && <p className="admin-error">{error}</p>}
       <div className="admin-stat-grid">{cards.map(([key, label, to, description]) => (
-        <Link className="admin-stat-card" key={key} to={to} aria-label={`${description}: ${stats?.[key] ?? '—'}`}>
-          <span>{label}</span><strong>{stats?.[key] ?? '—'}</strong><small>اضغط لعرض التفاصيل <span aria-hidden="true">←</span></small>
+        <Link className="admin-stat-card" key={key} to={to} aria-label={`${t(description)}: ${stats?.[key] ?? '—'}`}>
+          <span>{t(label)}</span><strong>{stats?.[key] ?? '—'}</strong><small>{t('اضغط لعرض التفاصيل')} <span aria-hidden="true">{isEnglish ? '→' : '←'}</span></small>
         </Link>
       ))}</div>
     </>

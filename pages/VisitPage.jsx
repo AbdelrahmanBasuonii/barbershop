@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { api, daysOfWeek } from '../api.js';
 import PageTitle from '../components/PageTitle.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 export default function VisitPage() {
+  const { t, isEnglish } = useLocale();
   const [settings, setSettings] = useState(null);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -11,15 +13,15 @@ export default function VisitPage() {
   }, []);
   return (
     <section className="content-section">
-      <PageTitle eyebrow="زورنا في المحل" description="مستنيينك في أي وقت خلال مواعيد العمل.">العنوان والمواعيد</PageTitle>
+      <PageTitle eyebrow={t('زورنا في المحل')} description={t('مستنيينك في أي وقت خلال مواعيد العمل.')}>{t('العنوان والمواعيد')}</PageTitle>
       <StatusMessage error>{error}</StatusMessage>
       {settings && <div className="visit-grid">
-        <article className="visit-card panel"><span className="eyebrow">العنوان</span><h2>{settings.name}</h2><p>{settings.address}</p>
+        <article className="visit-card panel"><span className="eyebrow">{t('العنوان')}</span><h2>{t(settings.name)}</h2><p>{t(settings.address)}</p>
           <a href={`tel:${settings.phone}`} className="phone-link">☎ {settings.phone}</a>
-          {settings.mapUrl && <iframe className="map-frame" src={settings.mapUrl} title="خريطة موقع محل الحلاقة" loading="lazy" />}
+          {settings.mapUrl && <iframe className="map-frame" src={settings.mapUrl} title={t('خريطة موقع محل الحلاقة')} loading="lazy" />}
         </article>
-        <article className="visit-card hours-card"><span className="eyebrow">مواعيدنا</span><h2>كل يوم بنستناك</h2><p>من {settings.openTime} إلى {settings.closeTime}</p>
-          <p className="muted">الإجازة: {settings.offDays.map(day => daysOfWeek[day]).join('، ') || 'لا يوجد'}</p>
+        <article className="visit-card hours-card"><span className="eyebrow">{t('مواعيدنا')}</span><h2>{t('كل يوم بنستناك')}</h2><p>{t('من')} {settings.openTime} {t('إلى')} {settings.closeTime}</p>
+          <p className="muted">{t('الإجازة:')} {settings.offDays.map(day => t(daysOfWeek[day])).join(isEnglish ? ', ' : '، ') || t('لا يوجد')}</p>
         </article>
       </div>}
     </section>

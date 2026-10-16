@@ -1,3 +1,5 @@
+import { translateText } from './context/LocaleContext.jsx';
+
 export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
 
 export function assetUrl(url) {
@@ -19,15 +21,18 @@ export async function api(path, options = {}) {
     body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body)
   });
   const data = response.status === 204 ? null : await response.json();
-  if (!response.ok) throw new Error(data?.error || `فشل الطلب (${response.status})`);
+  if (!response.ok) throw new Error(translateText(data?.error || `Request failed (${response.status})`));
   return data;
 }
 
-export const bookingStatuses = {
+const bookingStatusLabels = {
   pending: 'بانتظار التأكيد',
   confirmed: 'مؤكد',
   done: 'تم',
   cancelled: 'ملغي'
 };
+export const bookingStatuses = new Proxy(bookingStatusLabels, {
+  get: (statuses, key) => translateText(statuses[key])
+});
 
 export const daysOfWeek = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];

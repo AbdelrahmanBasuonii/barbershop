@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { api } from '../api.js';
 import PageTitle from '../components/PageTitle.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 export default function ForgotPasswordPage() {
+  const { t } = useLocale();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -31,13 +33,13 @@ export default function ForgotPasswordPage() {
 
   return (
     <section className="auth-page">
-      <PageTitle eyebrow="استعادة الحساب" description="هنبعتلك رابط آمن لإعادة تعيين كلمة المرور على بريدك الإلكتروني.">نسيت كلمة المرور؟</PageTitle>
+      <PageTitle eyebrow={t('استعادة الحساب')} description={t('هنبعتلك رابط آمن لإعادة تعيين كلمة المرور على بريدك الإلكتروني.')}>{t('نسيت كلمة المرور؟')}</PageTitle>
       <form className="panel form-stack auth-card" onSubmit={submit}>
-        <label>الإيميل المسجل في حسابك<input type="email" name="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} /></label>
+        <label>{t('الإيميل المسجل في حسابك')}<input type="email" name="email" autoComplete="email" required value={email} onChange={event => setEmail(event.target.value)} /></label>
         <StatusMessage error>{error}</StatusMessage>
         <StatusMessage>{message}</StatusMessage>
-        <button className="button" disabled={busy}>{busy ? 'جارٍ الإرسال...' : 'إرسال رابط إعادة التعيين'}</button>
-        <p className="form-footnote"><Link to="/login">العودة لتسجيل الدخول</Link></p>
+        <button className="button" disabled={busy}>{busy ? t('جارٍ الإرسال...') : t('إرسال رابط إعادة التعيين')}</button>
+        <p className="form-footnote"><Link to="/login">{t('العودة لتسجيل الدخول')}</Link></p>
       </form>
     </section>
   );

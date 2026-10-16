@@ -310,7 +310,16 @@ A.put('/settings', asyncRoute(async (req, res) => {
 A.get('/chats', (req, res) => res.json(Object.entries(db.chats).map(([id, msgs]) => ({ user: pub(db.users.find(u => u.id == id) || {}), msgs }))));
 
 // ---------- الشات (بوت تلقائي لحد ما الأدمن يرد) ----------
-const botReply = t => {
+const botReply = (t, language = 'ar') => {
+  if (language === 'en') {
+    if (/\b(price|prices|cost|how much)\b/i.test(t))
+      return 'Our prices: ' + db.services.map(service => `${service.name === 'قص شعر' ? 'Haircut' : service.name === 'حلاقة دقن' ? 'Beard trim' : service.name === 'قص + دقن' ? 'Haircut + beard trim' : service.name} ${service.price} EGP`).join(' - ');
+    if (/\b(address|where|location|directions)\b/i.test(t)) return 'Our address: ' + db.settings.address;
+    if (/\b(hours|open|opening|close|closing)\b/i.test(t)) return `We are open from ${db.settings.openTime} to ${db.settings.closeTime}.`;
+    if (/\b(book|booking|appointment|reserve)\b/i.test(t)) return 'You can book from the "Book an appointment" page after logging in.';
+    if (/\b(phone|call|number|contact)\b/i.test(t)) return 'Our phone number: ' + db.settings.phone;
+    return 'Welcome! Ask me about prices, our address, or opening hours, or wait for a team member to reply.';
+  }
   if (/سعر|بكام|اسعار|أسعار/.test(t)) return 'الأسعار: ' + db.services.map(s => `${s.name} ${s.price} ج`).join(' - ');
   if (/عنوان|فين|مكان|لوكيشن/.test(t)) return 'عنواننا: ' + db.settings.address;
   if (/ميعاد|مواعيد|فاتح|بتفتح|تقفل/.test(t)) return `بنفتح من ${db.settings.openTime} لـ ${db.settings.closeTime}`;
@@ -346,7 +355,7 @@ io.on('connection', s => {
     }
     const last = [...(db.chats[u.id] || [])].reverse().find(m => m.from === 'admin');
     if (!last || Date.now() - last.at > 30 * 60 * 1000)
-      setTimeout(() => push(u.id, { from: 'bot', text: botReply(message), at: Date.now() }).catch(handleChatError), 600);
+      setTimeout(() => push(u.id, { from: 'bot', text: botReply(message, s.handshake.auth.language), at: Date.now() }).catch(handleChatError), 600);
   });
   s.on('reply', ({ userId, text }) => {
     if (u.role === 'admin') push(userId, { from: 'admin', text: String(text).slice(0, 500), at: Date.now() }).catch(handleChatError);

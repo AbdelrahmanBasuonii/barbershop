@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api, bookingStatuses } from '../api.js';
 import AdminPageTitle from './AdminPageTitle.jsx';
+import { useLocale } from '../context/LocaleContext.jsx';
 
 export default function AdminBookings() {
+  const { t, isEnglish } = useLocale();
   const [searchParams] = useSearchParams();
   const [bookings, setBookings] = useState([]);
   const [error, setError] = useState('');
@@ -19,7 +21,7 @@ export default function AdminBookings() {
     if (todayFilter && booking.date !== todayString) return false;
     return true;
   });
-  const title = todayFilter ? 'حجوزات اليوم' : statusFilter === 'pending' ? bookingStatuses.pending : 'كل الحجوزات';
+  const title = todayFilter ? t('حجوزات اليوم') : statusFilter === 'pending' ? bookingStatuses.pending : t('كل الحجوزات');
 
   async function updateStatus(id, status) {
     try {
@@ -32,19 +34,19 @@ export default function AdminBookings() {
 
   return (
     <>
-      <AdminPageTitle title={title} description={`عدد الحجوزات المعروضة: ${filteredBookings.length}. راجع التفاصيل وحدّث حالة كل حجز.`} />
+      <AdminPageTitle title={title} description={isEnglish ? `Bookings shown: ${filteredBookings.length}. Review details and update each booking status.` : `عدد الحجوزات المعروضة: ${filteredBookings.length}. راجع التفاصيل وحدّث حالة كل حجز.`} />
       {error && <p className="admin-error">{error}</p>}
-      {(statusFilter || todayFilter) && <p className="admin-filter-link"><Link to="/admin/bookings">عرض كل الحجوزات</Link></p>}
+      {(statusFilter || todayFilter) && <p className="admin-filter-link"><Link to="/admin/bookings">{t('عرض كل الحجوزات')}</Link></p>}
       <div className="admin-table-wrap"><table className="admin-table">
-        <thead><tr><th>التاريخ</th><th>الوقت</th><th>العميل</th><th>التليفون</th><th>الخدمة</th><th>الحالة</th></tr></thead>
+        <thead><tr><th>{t('التاريخ')}</th><th>{t('الوقت')}</th><th>{t('العميل')}</th><th>{t('التليفون')}</th><th>{t('الخدمة')}</th><th>{t('الحالة')}</th></tr></thead>
         <tbody>{filteredBookings.map(booking => <tr key={booking.id}>
           <td>{booking.date}</td><td>{booking.time}</td><td>{booking.customer.fullName || '—'}</td><td>{booking.customer.phone || '—'}</td>
-          <td>{booking.service} ({booking.price} ج)</td>
-          <td><select value={booking.status} onChange={event => updateStatus(booking.id, event.target.value)} aria-label={`حالة حجز ${booking.customer.fullName || ''}`}>
+          <td>{t(booking.service)} ({booking.price} {t('جنيه')})</td>
+          <td><select value={booking.status} onChange={event => updateStatus(booking.id, event.target.value)} aria-label={`${t('حالة حجز')} ${booking.customer.fullName || ''}`}>
             {Object.entries(bookingStatuses).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select></td>
         </tr>)}</tbody>
-      </table>{!filteredBookings.length && <p className="admin-empty">{bookings.length ? 'لا توجد حجوزات تطابق هذا الاختيار.' : 'لا توجد حجوزات حتى الآن.'}</p>}</div>
+      </table>{!filteredBookings.length && <p className="admin-empty">{t(bookings.length ? 'لا توجد حجوزات تطابق هذا الاختيار.' : 'لا توجد حجوزات حتى الآن.')}</p>}</div>
     </>
   );
 }

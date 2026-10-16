@@ -1,3 +1,6 @@
+import { useLocale } from '../context/LocaleContext.jsx';
+
 export default function Footer() {
-  return <footer className="site-footer"><span>حلاقة على مزاجك، وميعادك علينا.</span><span>© {new Date().getFullYear()} محل الحلاقة</span></footer>;
+  const { t } = useLocale();
+  return <footer className="site-footer"><span>{t('حلاقة على مزاجك، وميعادك علينا.')}</span><span>© {new Date().getFullYear()} {t('محل الحلاقة')}</span></footer>;
 }
