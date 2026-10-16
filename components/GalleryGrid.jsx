@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { assetUrl } from '../api.js';
 
 export default function GalleryGrid({ items = [] }) {
   const [activeImage, setActiveImage] = useState(null);
@@ -23,7 +24,7 @@ export default function GalleryGrid({ items = [] }) {
               onClick={() => setActiveImage(item)}
               aria-label={`تكبير الصورة${item.title ? `: ${item.title}` : ''}`}
             >
-              <img loading="lazy" src={item.url} alt={item.title || 'قصة شعر من المعرض'} />
+              <img loading="lazy" src={assetUrl(item.url)} alt={item.title || 'قصة شعر من المعرض'} />
               <span className="gallery-zoom-hint" aria-hidden="true">تكبير الصورة</span>
             </button>
             {item.title && <figcaption>{item.title}</figcaption>}
@@ -47,7 +48,7 @@ export default function GalleryGrid({ items = [] }) {
             <button className="gallery-lightbox-close" type="button" onClick={() => setActiveImage(null)} aria-label="إغلاق الصورة">
               <span aria-hidden="true">×</span>
             </button>
-            <img className="gallery-lightbox-image" src={activeImage.url} alt={activeImage.title || 'قصة شعر من المعرض'} />
+            <img className="gallery-lightbox-image" src={assetUrl(activeImage.url)} alt={activeImage.title || 'قصة شعر من المعرض'} />
             {activeImage.title && <p className="gallery-lightbox-caption">{activeImage.title}</p>}
           </>
         )}

@@ -7,6 +7,13 @@ if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process
   throw new Error('Production requires a JWT_SECRET with at least 32 characters.');
 const RESET_TOKEN_TTL = 30 * 60 * 1000;
 const APP_URL = (process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`).replace(/\/+$/, '');
+if (process.env.NODE_ENV === 'production' && !process.env.APP_URL)
+  throw new Error('Production requires APP_URL so password reset links point to the deployed frontend.');
+const allowedOrigins = new Set((process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(origin => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean));
+const isOriginAllowed = origin => !origin || process.env.NODE_ENV !== 'production' || allowedOrigins.has(origin);
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
@@ -20,10 +27,34 @@ const mailer = SMTP_HOST && SMTP_FROM && (Boolean(SMTP_USER) === Boolean(SMTP_PA
     ...(SMTP_USER ? { auth: { user: SMTP_USER, pass: SMTP_PASS } } : {})
   })
   : null;
-const DB_FILE = path.join(__dirname, 'data.json');
-const app = express(), server = http.createServer(app), io = new Server(server);
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+fs.mkdirSync(DATA_DIR, { recursive: true });
+const DB_FILE = path.join(DATA_DIR, 'data.json');
+const app = express(), server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) return callback(null, true);
+      callback(new Error('Socket origin is not allowed.'));
+    },
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (!isOriginAllowed(origin)) return res.status(403).json({ error: 'مصدر الطلب غير مسموح.' });
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PATCH,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+  }
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use('/uploads', express.static(UPLOADS_DIR));
 const DIST = path.join(__dirname, 'client', 'dist');
@@ -58,7 +89,7 @@ const auth = (req, res, next) => {
   } catch { res.status(401).json({ error: 'سجّل الدخول أولاً' }); }
 };
 const admin = (req, res, next) => req.user.role === 'admin' ? next() : res.status(403).json({ error: 'للأدمن فقط' });
-const upload = multer({ storage: multer.diskStorage({ destination: path.join(__dirname, 'uploads'),
+const upload = multer({ storage: multer.diskStorage({ destination: UPLOADS_DIR,
   filename: (r, f, cb) => cb(null, Date.now() + path.extname(f.originalname)) }), limits: { fileSize: 100 * 1024 * 1024 } });
 
 // ---------- تسجيل / دخول ----------

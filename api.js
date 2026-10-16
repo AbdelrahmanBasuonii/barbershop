@@ -1,3 +1,10 @@
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+
+export function assetUrl(url) {
+  if (!url || /^(?:https?:|data:|blob:)/i.test(url)) return url;
+  return API_BASE_URL ? `${API_BASE_URL}${url.startsWith('/') ? '' : '/'}${url}` : url;
+}
+
 export async function api(path, options = {}) {
   const { body, token, ...requestOptions } = options;
   const authToken = token === undefined ? localStorage.getItem('t') || localStorage.getItem('at') : token;
@@ -5,7 +12,8 @@ export async function api(path, options = {}) {
   if (authToken) headers.set('Authorization', `Bearer ${authToken}`);
   if (body && !(body instanceof FormData)) headers.set('Content-Type', 'application/json');
 
-  const response = await fetch(path.startsWith('/api/') ? path : `/api/${path}`, {
+  const endpoint = path.startsWith('/api/') ? path : `/api/${path}`;
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...requestOptions,
     headers,
     body: body instanceof FormData ? body : body === undefined ? undefined : JSON.stringify(body)

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
+import { API_BASE_URL } from '../api.js';
 import PageTitle from '../components/PageTitle.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 
@@ -12,7 +13,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     const token = localStorage.getItem('t');
-    const socket = io({ auth: { token } });
+    const socket = io(API_BASE_URL || undefined, { auth: { token } });
     socketRef.current = socket;
     socket.on('history', setMessages);
     socket.on('msg', message => setMessages(current => [...current, message]));

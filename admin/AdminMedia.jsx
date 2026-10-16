@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api.js';
+import { api, assetUrl } from '../api.js';
 import AdminPageTitle from './AdminPageTitle.jsx';
 
 export default function AdminMedia({ kind }) {
@@ -57,7 +57,7 @@ export default function AdminMedia({ kind }) {
       </form>
       <div className="admin-media-grid">
         {items.map(item => <article className="admin-media-item" key={item.id}>
-          {isGallery ? <img src={item.url} alt={item.title || 'صورة من المعرض'} /> : <p className="media-link">{item.url}</p>}
+          {isGallery ? <img src={assetUrl(item.url)} alt={item.title || 'صورة من المعرض'} /> : <p className="media-link">{assetUrl(item.url)}</p>}
           <strong>{item.title || (isGallery ? 'صورة بدون عنوان' : 'فيديو بدون عنوان')}</strong>
           <button className="button button-outline" onClick={() => remove(item.id)}>حذف</button>
         </article>)}

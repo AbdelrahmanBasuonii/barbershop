@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-import { api } from '../api.js';
+import { API_BASE_URL, api } from '../api.js';
 import AdminPageTitle from './AdminPageTitle.jsx';
 
 export default function AdminChats() {
@@ -19,7 +19,7 @@ export default function AdminChats() {
 
   useEffect(() => {
     refresh().catch(problem => setError(problem.message));
-    const socket = io({ auth: { token: localStorage.getItem('at') } });
+    const socket = io(API_BASE_URL || undefined, { auth: { token: localStorage.getItem('at') } });
     socketRef.current = socket;
     socket.on('msg', message => setChats(current => {
       const existing = current.find(chat => chat.user.id === message.userId);
