@@ -7,6 +7,7 @@ import SectionHeading from '../components/SectionHeading.jsx';
 import ServiceCard from '../components/ServiceCard.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
 import VideoGrid from '../components/VideoGrid.jsx';
+import { withFeaturedGallery } from '../galleryData.js';
 
 export default function Home() {
   const [content, setContent] = useState(null);
@@ -36,7 +37,7 @@ export default function Home() {
       <section className="content-section section-muted">
         <div className="section-inner">
           <SectionHeading title="من معرض الستايلات" to="/gallery">كل الصور</SectionHeading>
-          <GalleryGrid items={content?.gallery.slice(0, 3) || []} />
+          <GalleryGrid items={withFeaturedGallery(content?.gallery || []).slice(0, 3)} />
         </div>
       </section>
       <section className="content-section">
