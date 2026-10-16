@@ -24,44 +24,35 @@
 
 ### إعداد استعادة كلمة المرور بالبريد الإلكتروني
 
-إعادة التعيين تحتاج حساب بريد SMTP لإرسال رابط تأكيد آمن وصالح لمدة 30 دقيقة ولمرة واحدة. عيّن الإعدادات التالية في بيئة تشغيل الخادم:
-
-- `SMTP_HOST`: عنوان خادم البريد.
-- `SMTP_PORT`: المنفذ، عادةً `587` أو `465`.
-- `SMTP_USER` و`SMTP_PASS`: بيانات الدخول إذا كان الخادم يتطلب المصادقة؛ يجب ضبطهما معاً.
-- `SMTP_FROM`: عنوان المرسل المسموح به لدى مزود البريد.
-- `APP_URL`: العنوان العام للواجهة، مثل `https://example.com`، حتى يفتح رابط الرسالة الموقع الصحيح. في التطوير استخدم رابط Vite `http://localhost:5173`.
-- `SMTP_SECURE=true`: اختياري للاتصال الآمن، ويُفعّل تلقائياً عند استخدام المنفذ `465`.
-
-بعد ضبط الإعدادات، أعد تشغيل `npm start`. إذا لم تُضبط بيانات SMTP، تعرض صفحة استعادة كلمة المرور رسالة واضحة وتطلب تهيئة البريد أولاً.
+إعادة التعيين تستخدم Resend Email API عبر HTTPS، والرابط صالح لمدة 30 دقيقة ولمرة واحدة. أضف `RESEND_API_KEY` و`EMAIL_FROM` كمتغيرات سرية، وتأكد من توثيق نطاق المرسل لدى Resend. هذا يتفادى منافذ SMTP المحجوبة على الاستضافة المجانية.
 
 مثال إعداد مؤقت على Windows PowerShell (استبدل القيم ببيانات مزود البريد، ولا تشارك كلمة المرور أو تحفظها في ملفات المشروع):
 
 ```powershell
-$env:SMTP_HOST = "smtp.example.com"
-$env:SMTP_PORT = "587"
-$env:SMTP_USER = "your-sender@example.com"
-$env:SMTP_PASS = "your-mail-provider-app-password"
-$env:SMTP_FROM = "your-sender@example.com"
+$env:RESEND_API_KEY = "re_your-resend-api-key"
+$env:EMAIL_FROM = "Barbershop <noreply@your-verified-domain.example>"
 $env:APP_URL = "http://localhost:3000"
 npm start
 ```
 
-### نشر كامل الميزات: Vercel + Render
+### نشر كامل الميزات مجاناً: Vercel + Render + Supabase
 
-واجهة React تُنشر على Vercel، بينما يعمل خادم API وSocket.IO على Render. أُضيف `vercel.json` لإعداد البناء ومسارات React، و`render.yaml` لإعداد خدمة API ووحدة التخزين الدائمة للبيانات والصور والفيديوهات.
+واجهة React تُنشر على Vercel، بينما يعمل خادم API وSocket.IO على Render Free، وتحفظ Supabase قاعدة البيانات والملفات المرفوعة. أُضيف `vercel.json` لإعداد البناء ومسارات React، و`render.yaml` لإعداد الخادم ومتغيراته.
 
 1. اربط المستودع بـVercel واضبط أمر البناء `npm run build` ومجلد الإخراج `client/dist`.
 2. أضف في Vercel متغير البناء `VITE_API_URL` بعنوان خدمة Render، مثل `https://barbershop-api.onrender.com`، ثم أعد النشر.
-3. اربط المستودع نفسه بـRender باستخدام Blueprint الملف `render.yaml`. عند إعداد المتغيرات، عيّن `APP_URL` إلى عنوان Vercel، و`CORS_ORIGINS` إلى نفس عنوان Vercel بدون `/` في النهاية، وبيانات `ADMIN_EMAIL` و`ADMIN_PASSWORD` وSMTP.
-4. يولّد Render قيمة `JWT_SECRET` تلقائياً ويحفظ `data.json` والوسائط في قرص دائم تحت `/var/data`.
+3. أنشئ مشروع Supabase مجانيًا، وانسخ عنوان Postgres pooler إلى `DATABASE_URL`، ورابط المشروع إلى `SUPABASE_URL`، ومفتاح `service_role` إلى `SUPABASE_SERVICE_ROLE_KEY`. مفتاح الخدمة سري ولا يوضع في Vercel أو الواجهة.
+4. اربط المستودع نفسه بـRender باستخدام Blueprint الملف `render.yaml`. عند إعداد المتغيرات، عيّن `APP_URL` إلى عنوان Vercel، و`CORS_ORIGINS` إلى نفس عنوان Vercel بدون `/` في النهاية، وبيانات `ADMIN_EMAIL` و`ADMIN_PASSWORD` وSupabase و`RESEND_API_KEY` و`EMAIL_FROM`.
+5. يولّد Render قيمة `JWT_SECRET` تلقائياً، وينشئ التطبيق جدول التخزين ومخزن الملفات في Supabase عند أول تشغيل.
 
 لا ترفع الأسرار إلى GitHub. `render.yaml` يطلب إدخال الأسرار كمتغيرات بيئة، بينما `.env.example` يحتوي أسماء ومثالاً لقيم غير سرية فقط.
 
-للنشر من مستودع نظيف: استخدم `npm ci` ثم `npm run build` كأمر بناء. خادم Render يعمل بأمر `npm start`. عيّن متغيرات الإنتاج من إعدادات الاستضافة، ولا ترفع ملف `.env` أو بيانات التطبيق.
+استخدم `npm ci` ثم `npm run build` لبناء واجهة Vercel. خادم Render يعمل بأمر `npm start`. عيّن متغيرات الإنتاج من إعدادات الاستضافة، ولا ترفع ملف `.env` أو بيانات التطبيق.
+
+الخطط المجانية للاختبار والمشاريع الصغيرة وليست ضمان تشغيل دائم: قد ينام خادم Render بعد الخمول فيتأخر أول طلب عند إيقاظه، وقد تتوقف مشاريع Supabase المجانية بعد أسبوع من عدم النشاط. تخزين Supabase المجاني محدود، لذا حدّثه أو راقب استخدامه إذا كبر معرض الوسائط.
 
 في وضع التطوير المحلي فقط، ينشئ التطبيق حساباً افتراضياً للأدمن: `admin@barber.com` / `Admin@12345`. **لا تستخدم بيانات التطوير الافتراضية في الإنتاج.** عند `NODE_ENV=production` يتطلب تشغيل الخادم `JWT_SECRET` بطول 32 حرفاً على الأقل، كما يتطلب عند إنشاء قاعدة البيانات لأول مرة `ADMIN_EMAIL` وكلمة مرور `ADMIN_PASSWORD` قوية بطول 12 حرفاً على الأقل.
 
-قاعدة البيانات المحلية (`data.json`) والملفات المرفوعة (`uploads/`) مستثناة من Git للحفاظ على خصوصية بيانات العملاء. يتطلب تشغيل الخادم على Render قرصاً دائماً، وتحدّد إعداداته في `render.yaml`.
+قاعدة البيانات المحلية (`data.json`) والملفات المرفوعة (`uploads/`) مستثناة من Git للحفاظ على خصوصية بيانات العملاء. في الإنتاج تُحفظ البيانات في PostgreSQL والوسائط في Supabase Storage؛ يحتفظ مجلد `uploads/` بالتخزين المحلي للتطوير فقط.
 
 انسخ `.env.example` إلى `.env` للتطوير المحلي فقط، واستبدل القيم التجريبية محلياً. إعدادات الخادم الحقيقية تُضاف كمتغيرات سرية في بيئة التشغيل.
